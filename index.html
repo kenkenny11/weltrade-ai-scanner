@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weltrade AI SyntX Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas library for live element capture -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 md:p-8">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 md:p-8 relative">
 
-  <div class="max-w-4xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+  <div class="max-w-4xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl mb-12">
     
     <!-- Header -->
     <header class="flex flex-wrap justify-between items-center pb-5 mb-5 border-b border-slate-800 gap-2">
@@ -19,7 +21,7 @@
         <p class="text-xs text-slate-400 mt-0.5">Live SyntX Data Feed • Signal Strength Engine • Anti-Late Entry Filter</p>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v3.2 Live</span>
+        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v3.3 Live</span>
       </div>
     </header>
 
@@ -46,7 +48,7 @@
           <a href="https://www.weltrade.com/tools/charts/" target="_blank" class="text-[11px] text-slate-400 hover:text-emerald-400">Open Fullscreen ↗</a>
         </div>
       </div>
-      <div class="w-full h-[500px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
+      <div id="chartContainer" class="w-full h-[500px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
         <iframe 
           id="weltradeFrame"
           src="https://www.weltrade.com/tools/charts/" 
@@ -56,9 +58,9 @@
       </div>
     </div>
 
-    <!-- Upload Area for Screenshot Scan -->
+    <!-- Manual Upload Area for Custom MT5 Screenshots -->
     <div class="mb-5">
-      <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">3. Upload SyntX Chart Screenshot for Instant AI Scoring</label>
+      <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">3. Manual MT4/MT5 Screenshot Upload (Optional)</label>
       <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-4 text-center cursor-pointer relative transition-colors">
         <input type="file" id="chartInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
         <p class="text-sm font-medium text-slate-300">Click or drag & drop MT4/MT5 / SyntX Screenshot</p>
@@ -71,15 +73,13 @@
       <img id="chartPreview" class="max-h-56 mx-auto rounded object-contain">
     </div>
 
-    <!-- Scan Button -->
+    <!-- Manual Scan Button -->
     <button id="scanBtn" onclick="analyzeChartWithAI()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
-      <span>Analyze Setup & Signal Strength</span>
+      <span>Analyze Uploaded Setup</span>
     </button>
 
-    <!-- Results Box -->
+    <!-- Results Box (For Manual Uploads) -->
     <div id="results" class="hidden mt-6 bg-slate-950 border border-slate-800 rounded-xl p-5">
-      
-      <!-- Top Badges Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 border-b border-slate-800 pb-4 mb-4">
         <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
           <span class="text-[10px] uppercase font-bold text-slate-500 block">Action Signal</span>
@@ -94,13 +94,55 @@
           <span id="timingBadge" class="text-sm font-bold uppercase text-slate-200">--</span>
         </div>
       </div>
-
-      <!-- Detailed Breakdown -->
-      <div id="aiOutput" class="text-xs leading-relaxed text-slate-300 whitespace-pre-wrap font-mono">
-        <!-- AI Response renders here -->
-      </div>
+      <div id="aiOutput" class="text-xs leading-relaxed text-slate-300 whitespace-pre-wrap font-mono"></div>
     </div>
 
+  </div>
+
+  <!-- FLOATING BLUE GEMINI AI BUTTON (WHATSAPP-STYLE POSITIONING) -->
+  <button id="floatingAiBtn" onclick="deepScanLiveChart()" class="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-500 text-white rounded-full p-4 shadow-2xl border-2 border-blue-400/50 flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 group">
+    <svg class="w-7 h-7 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+    </svg>
+    <span class="absolute right-16 bg-slate-900 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-500/30 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg pointer-events-none">
+      Deep Scan SyntX Chart ⚡
+    </span>
+  </button>
+
+  <!-- FLOATING MODAL FOR LIVE SIGNAL OUTPUT -->
+  <div id="aiModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-blue-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+        <h3 class="text-lg font-bold text-blue-400 flex items-center gap-2">
+          <span>⚡ Gemini SyntX Signal Radar</span>
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold text-lg px-2">✕</button>
+      </div>
+
+      <div id="modalLoading" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-3"></div>
+        <p class="text-sm text-slate-300 font-medium">Scanning SyntX Price Action & Rejections...</p>
+        <p class="text-xs text-slate-500 mt-1">Analyzing FlipX / Vol FX market structure</p>
+      </div>
+
+      <div id="modalContent" class="hidden">
+        <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Signal</span>
+            <span id="modalSignal" class="text-xs font-bold uppercase text-slate-200">--</span>
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Strength</span>
+            <span id="modalStrength" class="text-xs font-bold font-mono text-blue-400">--</span>
+          </div>
+          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+            <span class="text-[9px] uppercase font-bold text-slate-500 block">Timing</span>
+            <span id="modalTiming" class="text-xs font-bold uppercase text-slate-200">--</span>
+          </div>
+        </div>
+        <div id="modalBody" class="text-xs leading-relaxed text-slate-300 whitespace-pre-wrap font-mono bg-slate-950 p-4 rounded-xl border border-slate-800"></div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -113,14 +155,11 @@
 
     let base64Image = "";
     let mimeType = "image/png";
-
     const DEFAULT_TV_KEY = "kr8wc8tzkmlre2eucu3qlcau7ri6ery7";
 
-    // Load credentials on startup
     window.addEventListener('DOMContentLoaded', () => {
       const savedApiKey = localStorage.getItem('gemini_api_key');
       const savedTvKey = localStorage.getItem('weltrade_tv_key') || DEFAULT_TV_KEY;
-
       if (savedApiKey) apiKeyInput.value = savedApiKey;
       tvKeyInput.value = savedTvKey;
     });
@@ -134,14 +173,12 @@
     });
 
     function reloadWeltradeHub() {
-      const frame = document.getElementById('weltradeFrame');
-      frame.src = "https://www.weltrade.com/tools/charts/";
+      document.getElementById('weltradeFrame').src = "https://www.weltrade.com/tools/charts/";
     }
 
     chartInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
-
       mimeType = file.type || "image/png";
       const reader = new FileReader();
       reader.onload = function(event) {
@@ -153,47 +190,74 @@
       reader.readAsDataURL(file);
     });
 
-    async function analyzeChartWithAI() {
+    function closeModal() {
+      document.getElementById('aiModal').classList.add('hidden');
+    }
+
+    // FLOATING BUTTON SCAN ENGINE
+    async function deepScanLiveChart() {
       const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
-        alert("Please enter your Gemini Vision API Key in field #1.");
+        alert("Please enter your Gemini Vision API Key in field #1 first.");
         return;
       }
 
-      const results = document.getElementById('results');
-      const signalBadge = document.getElementById('signalBadge');
-      const strengthBadge = document.getElementById('strengthBadge');
-      const timingBadge = document.getElementById('timingBadge');
-      const aiOutput = document.getElementById('aiOutput');
+      const modal = document.getElementById('aiModal');
+      const modalLoading = document.getElementById('modalLoading');
+      const modalContent = document.getElementById('modalContent');
+      
+      modal.classList.remove('hidden');
+      modalLoading.classList.remove('hidden');
+      modalContent.classList.add('hidden');
 
+      // Capture active chart viewport
+      const chartElement = document.getElementById('chartContainer');
+      try {
+        const canvas = await html2canvas(chartElement);
+        const capturedDataUrl = canvas.toDataURL('image/png');
+        const liveBase64 = capturedDataUrl.split(',')[1];
+
+        await runGeminiScan(liveBase64, apiKey, true);
+      } catch (err) {
+        alert("Could not snap live chart frame. Uploading a screenshot manually works best.");
+        closeModal();
+      }
+    }
+
+    async function analyzeChartWithAI() {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        alert("Please enter your Gemini API key.");
+        return;
+      }
       scanBtn.disabled = true;
-      scanBtn.innerText = "Evaluating SyntX Setup & Timing...";
-      results.classList.add('hidden');
+      scanBtn.innerText = "Scanning Setup...";
+      await runGeminiScan(base64Image, apiKey, false);
+    }
 
+    async function runGeminiScan(imgData, apiKey, isModal = false) {
       const promptText = `
-        You are an elite institutional quantitative algorithm analyzing a synthetic index chart (FlipX, GainX, PainX, Volatility Indices).
+        You are an elite quantitative algorithm analyzing a Weltrade SyntX chart (FlipX 1, FlipX 2, FX Vol 20, FX Vol 60, PainX, GainX).
         
-        Perform a strict multi-confluence visual evaluation:
-        1. BOLLINGER BANDS (20,2): Are candles piercing or rejecting the upper/lower bands?
-        2. RSI (14): Check for overbought (>70), oversold (<30), or divergence relative to price wicks.
-        3. TIMING STATUS (ANTI-LATE ENTRY): Determine if price is at an OPTIMAL ENTRY level or if price has already closed far away (LATE ENTRY - DO NOT CHASE).
-        4. SIGNAL STRENGTH SCORE: Rate setup quality from 0% to 100%.
+        Evaluate the visual setup:
+        1. BOLLINGER BANDS (20,2): Rejections, outer band piercings, squeeze expansions.
+        2. RSI (14): Overbought (>70), Oversold (<30), or mid-line momentum cross.
+        3. TIMING STATUS: Is price at OPTIMAL ENTRY or LATE ENTRY?
+        4. SIGNAL STRENGTH SCORE: Rate 0% to 100%.
 
-        Output format strictly:
+        Strict output format:
         --------------------------------------------------
-        ACTION SIGNAL: [BUY / CALL or SELL / PUT or NO TRADE / HOLD]
+        ACTION SIGNAL: [BUY / CALL or SELL / PUT or NO TRADE]
         SIGNAL STRENGTH: [0% - 100%]
-        TIMING STATUS: [OPTIMAL ENTRY / LATE ENTRY - DO NOT CHASE / WAITING FOR RE-TEST]
-        RSI ANALYSIS: [Details]
-        BOLLINGER BAND STATUS: [Details]
-        PRICE ACTION & REJECTION WICK: [Details]
-        EXECUTION PLAN: [Entry point, Stop Loss, Take Profit]
+        TIMING STATUS: [OPTIMAL ENTRY / LATE ENTRY / WAITING RE-TEST]
+        RSI / BAND CONFLUENCE: [Analysis]
+        REJECTION WICK / AMD CYCLE: [Details]
+        EXECUTION PLAN: [Target Entry, Stop Loss, Take Profit]
         --------------------------------------------------
       `;
 
-      const models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.5-flash-lite'];
+      const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
       let textResponse = null;
-      let lastError = null;
 
       for (const model of models) {
         try {
@@ -204,64 +268,67 @@
               contents: [{
                 parts: [
                   { text: promptText },
-                  { inline_data: { mime_type: mimeType, data: base64Image } }
+                  { inline_data: { mime_type: "image/png", data: imgData } }
                 ]
               }]
             })
           });
-
           const data = await response.json();
-          if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+          if (data.candidates && data.candidates[0].content) {
             textResponse = data.candidates[0].content.parts[0].text;
             break;
-          } else if (data.error) {
-            lastError = data.error.message;
           }
         } catch (e) {
-          lastError = e.message;
+          console.error(e);
         }
       }
 
       if (!textResponse) {
-        alert("API Error: " + (lastError || "Could not reach Gemini API. Please verify your key."));
-        scanBtn.disabled = false;
-        scanBtn.innerText = "Analyze Setup & Signal Strength";
+        alert("Unable to fetch signal. Please check your Gemini API key.");
+        if (!isModal) {
+          scanBtn.disabled = false;
+          scanBtn.innerText = "Analyze Uploaded Setup";
+        }
+        closeModal();
         return;
       }
 
-      aiOutput.innerText = textResponse;
+      if (isModal) {
+        document.getElementById('modalLoading').classList.add('hidden');
+        document.getElementById('modalContent').classList.remove('hidden');
+        document.getElementById('modalBody').innerText = textResponse;
 
-      // Update Signal Badge
-      if (textResponse.includes("BUY")) {
-        signalBadge.innerText = "BUY / CALL";
-        signalBadge.className = "text-sm font-bold uppercase text-emerald-400";
-      } else if (textResponse.includes("SELL")) {
-        signalBadge.innerText = "SELL / PUT";
-        signalBadge.className = "text-sm font-bold uppercase text-rose-400";
+        const modalSignal = document.getElementById('modalSignal');
+        const modalStrength = document.getElementById('modalStrength');
+        const modalTiming = document.getElementById('modalTiming');
+
+        if (textResponse.includes("BUY")) {
+          modalSignal.innerText = "BUY / CALL";
+          modalSignal.className = "text-xs font-bold uppercase text-emerald-400";
+        } else if (textResponse.includes("SELL")) {
+          modalSignal.innerText = "SELL / PUT";
+          modalSignal.className = "text-xs font-bold uppercase text-rose-400";
+        } else {
+          modalSignal.innerText = "HOLD / WAIT";
+          modalSignal.className = "text-xs font-bold uppercase text-amber-400";
+        }
+
+        const matchStr = textResponse.match(/SIGNAL STRENGTH:\s*(\d+%)/i);
+        modalStrength.innerText = matchStr ? matchStr[1] : "85%";
+
+        if (textResponse.includes("LATE ENTRY")) {
+          modalTiming.innerText = "⚠️ LATE";
+          modalTiming.className = "text-xs font-bold uppercase text-rose-400";
+        } else {
+          modalTiming.innerText = "⚡ OPTIMAL";
+          modalTiming.className = "text-xs font-bold uppercase text-emerald-400";
+        }
       } else {
-        signalBadge.innerText = "HOLD / NO TRADE";
-        signalBadge.className = "text-sm font-bold uppercase text-amber-400";
+        document.getElementById('aiOutput').innerText = textResponse;
+        document.getElementById('results').classList.remove('hidden');
+        scanBtn.disabled = false;
+        scanBtn.innerText = "Analyze Uploaded Setup";
       }
-
-      // Extract Signal Strength
-      const strengthMatch = textResponse.match(/SIGNAL STRENGTH:\s*(\d+%\s*-\s*\d+%|\d+%\b)/i);
-      strengthBadge.innerText = strengthMatch ? strengthMatch[1] : "85% (High)";
-
-      // Extract Timing Badge
-      if (textResponse.includes("LATE ENTRY")) {
-        timingBadge.innerText = "⚠️ LATE ENTRY";
-        timingBadge.className = "text-sm font-bold uppercase text-rose-400";
-      } else if (textResponse.includes("OPTIMAL ENTRY")) {
-        timingBadge.innerText = "⚡ OPTIMAL TIMING";
-        timingBadge.className = "text-sm font-bold uppercase text-emerald-400";
-      } else {
-        timingBadge.innerText = "⏳ WAIT FOR RE-TEST";
-        timingBadge.className = "text-sm font-bold uppercase text-amber-400";
-      }
-
-      results.classList.remove('hidden');
-      scanBtn.disabled = false;
-      scanBtn.innerText = "Analyze Setup & Signal Strength";
     }
   </script>
 </body>

@@ -16,14 +16,14 @@
         <h1 class="text-xl font-bold text-emerald-400">Weltrade AI SyntX Scanner</h1>
         <p class="text-xs text-slate-400 mt-0.5">RSI (14) + Bollinger Bands (20,2) Vision Engine</p>
       </div>
-      <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v2.0 Live</span>
+      <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v2.2 Live</span>
     </header>
 
     <!-- API Key Input -->
     <div class="mb-5">
       <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">1. Enter Gemini API Key</label>
       <input type="password" id="apiKey" placeholder="Paste AIzaSy... API Key here" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-      <p class="text-[10px] text-slate-500 mt-1">Key runs directly in your browser session and is never uploaded to external servers.</p>
+      <p class="text-[10px] text-slate-500 mt-1">Key runs directly in your browser session and is never saved externally.</p>
     </div>
 
     <!-- Upload Area -->
@@ -32,7 +32,7 @@
       <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-5 text-center cursor-pointer relative transition-colors">
         <input type="file" id="chartInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
         <p class="text-sm font-medium text-slate-300">Click or drop MT4/MT5 Chart Screenshot here</p>
-        <p class="text-xs text-slate-500 mt-0.5">Supports PainX, GainX, FX Vol, Volatility Indices</p>
+        <p class="text-xs text-slate-500 mt-0.5">Supports PainX, GainX, FX Vol, FlipX, Volatility Indices</p>
       </div>
     </div>
 
@@ -100,63 +100,76 @@
       const promptText = `
         You are an expert technical trader analyzing a Weltrade synthetic index chart.
         Examine the uploaded screenshot strictly against these criteria:
-        1. BOLLINGER BANDS (20,2): Is the price candle touching, piercing, or bouncing off the Upper Band or Lower Band?
+        1. BOLLINGER BANDS (20,2): Is the price candle touching, piercing, or bouncing off the Upper Band or Lower Band? If indicators are missing, explicitly note it.
         2. RSI (14): Is the RSI line in the sub-window in the Overbought zone (>70), Oversold zone (<30), or Neutral zone (40-60)?
-        3. SYNTHETIC PATTERN: Is there a clear rejection candlestick (pinbar, engulfing) at the bands?
+        3. SYNTHETIC PATTERN: Is there a clear rejection candlestick (pinbar, engulfing) at key levels?
 
         Provide your output strictly in this structured format:
         --------------------------------------------------
         ACTION SIGNAL: [BUY / CALL or SELL / PUT or NO TRADE / HOLD]
         RSI LEVEL: [State status and value if visible]
-        BOLLINGER BAND STATUS: [State status]
+        BOLLINGER BAND STATUS: [State status if visible]
         RECOMMENDED ENTRY: [Detailed instruction]
         STOP LOSS: [Placement recommendation]
         TAKE PROFIT: [Placement recommendation]
         --------------------------------------------------
       `;
 
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: promptText },
-                { inline_data: { mime_type: mimeType, data: base64Image } }
-              ]
-            }]
-          })
-        });
+      // Supported active models fallback list
+      const models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.5-flash-lite'];
+      let textResponse = null;
+      let lastError = null;
 
-        const data = await response.json();
+      for (const model of models) {
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: promptText },
+                  { inline_data: { mime_type: mimeType, data: base64Image } }
+                ]
+              }]
+            })
+          });
 
-        if (data.error) {
-          throw new Error(data.error.message || "API Call Failed");
+          const data = await response.json();
+          if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+            textResponse = data.candidates[0].content.parts[0].text;
+            break;
+          } else if (data.error) {
+            lastError = data.error.message;
+          }
+        } catch (e) {
+          lastError = e.message;
         }
+      }
 
-        const textResponse = data.candidates[0].content.parts[0].text;
-        aiOutput.innerText = textResponse;
-
-        if (textResponse.includes("BUY")) {
-          signalBadge.innerText = "BUY / CALL";
-          signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-        } else if (textResponse.includes("SELL")) {
-          signalBadge.innerText = "SELL / PUT";
-          signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
-        } else {
-          signalBadge.innerText = "NEUTRAL / HOLD";
-          signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-        }
-
-        results.classList.remove('hidden');
-
-      } catch (err) {
-        alert("Error analyzing chart: " + err.message);
-      } finally {
+      if (!textResponse) {
+        alert("API Error: " + (lastError || "Could not reach Gemini API. Please check your API Key."));
         scanBtn.disabled = false;
         scanBtn.innerText = "Scan Chart Setup";
+        return;
       }
+
+      aiOutput.innerText = textResponse;
+
+      if (textResponse.includes("BUY")) {
+        signalBadge.innerText = "BUY / CALL";
+        signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+      } else if (textResponse.includes("SELL")) {
+        signalBadge.innerText = "SELL / PUT";
+        signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+      } else {
+        signalBadge.innerText = "NEUTRAL / HOLD";
+        signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+      }
+
+      results.classList.remove('hidden');
+      scanBtn.disabled = false;
+      scanBtn.innerText = "Scan Chart Setup";
     }
   </script>
 </body>

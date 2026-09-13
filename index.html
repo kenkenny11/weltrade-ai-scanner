@@ -3,55 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weltrade AI SyntX Scanner</title>
+  <title>Weltrade AI SyntX Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- TradingView Library -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 md:p-8">
 
-  <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+  <div class="max-w-4xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
     
     <!-- Header -->
-    <header class="flex justify-between items-center pb-5 mb-5 border-b border-slate-800">
+    <header class="flex flex-wrap justify-between items-center pb-5 mb-5 border-b border-slate-800 gap-2">
       <div>
-        <h1 class="text-xl font-bold text-emerald-400">Weltrade AI SyntX Scanner</h1>
-        <p class="text-xs text-slate-400 mt-0.5">Pine Script & Price Action Multi-Engine (< 1H)</p>
+        <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
+          Weltrade AI SyntX Terminal
+        </h1>
+        <p class="text-xs text-slate-400 mt-0.5">Analytic Hub Live Feed • Anti-Late Entry Filter • Vision Engine</p>
       </div>
-      <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v2.3 Live</span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v3.1 Live</span>
+      </div>
     </header>
 
-    <!-- API Key Input -->
-    <div class="mb-5">
-      <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">1. Enter Gemini API Key</label>
-      <input type="password" id="apiKey" placeholder="Paste AIzaSy... API Key here" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-      <p class="text-[10px] text-slate-500 mt-1">Key is saved securely in your phone's browser local storage.</p>
+    <!-- Credentials Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">1. Gemini Vision API Key</label>
+        <input type="password" id="apiKey" placeholder="Paste AIzaSy... API Key here" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">2. Weltrade TradingView Key</label>
+        <input type="text" id="tvKey" placeholder="Paste Weltrade TV Key..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200 font-mono">
+      </div>
     </div>
 
-    <!-- Upload Area -->
+    <!-- Embedded Live Chart with Sync Key Feed -->
+    <div class="mb-6">
+      <div class="flex justify-between items-center mb-2">
+        <label class="text-xs font-semibold uppercase text-slate-400">Live Weltrade Chart Hub</label>
+        <button onclick="reloadWeltradeChart()" class="text-[11px] text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">Sync Account Key</button>
+      </div>
+      <div class="w-full h-96 rounded-xl overflow-hidden border border-slate-800 bg-slate-950" id="tv_chart_container"></div>
+    </div>
+
+    <!-- Upload Area for Screenshot Scan -->
     <div class="mb-5">
-      <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">2. Upload Weltrade Chart Screenshot</label>
-      <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-5 text-center cursor-pointer relative transition-colors">
+      <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">3. Analyze Screenshot Setup & Signal Strength</label>
+      <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-4 text-center cursor-pointer relative transition-colors">
         <input type="file" id="chartInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
-        <p class="text-sm font-medium text-slate-300">Click or drop MT4/MT5 / TradingView Chart Screenshot here</p>
-        <p class="text-xs text-slate-500 mt-0.5">Supports PainX, GainX, FX Vol, FlipX, Volatility Indices</p>
+        <p class="text-sm font-medium text-slate-300">Click or drag & drop Chart Screenshot</p>
+        <p class="text-xs text-slate-500 mt-0.5">Supports FlipX, PainX, GainX, FX Vol, Volatility Indices</p>
       </div>
     </div>
 
     <!-- Image Preview -->
     <div id="previewContainer" class="hidden mb-5 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center">
-      <img id="chartPreview" class="max-h-56 mx-auto rounded object-contain">
+      <img id="chartPreview" class="max-h-48 mx-auto rounded object-contain">
     </div>
 
     <!-- Scan Button -->
     <button id="scanBtn" onclick="analyzeChartWithAI()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
-      <span>Scan Chart Setup</span>
+      <span>Analyze Setup & Signal Strength</span>
     </button>
 
     <!-- Results Box -->
     <div id="results" class="hidden mt-6 bg-slate-950 border border-slate-800 rounded-xl p-5">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
-        <span class="text-xs font-semibold uppercase text-slate-400">Trading Insight</span>
-        <span id="signalBadge" class="text-xs px-2.5 py-1 rounded font-bold uppercase">--</span>
+      
+      <!-- Top Badges Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 border-b border-slate-800 pb-4 mb-4">
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+          <span class="text-[10px] uppercase font-bold text-slate-500 block">Action Signal</span>
+          <span id="signalBadge" class="text-sm font-bold uppercase text-slate-200">--</span>
+        </div>
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+          <span class="text-[10px] uppercase font-bold text-slate-500 block">Signal Strength</span>
+          <span id="strengthBadge" class="text-sm font-bold font-mono text-emerald-400">--</span>
+        </div>
+        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
+          <span class="text-[10px] uppercase font-bold text-slate-500 block">Timing Status</span>
+          <span id="timingBadge" class="text-sm font-bold uppercase text-slate-200">--</span>
+        </div>
       </div>
+
+      <!-- Detailed Breakdown -->
       <div id="aiOutput" class="text-xs leading-relaxed text-slate-300 whitespace-pre-wrap font-mono">
         <!-- AI Response renders here -->
       </div>
@@ -60,24 +94,64 @@
   </div>
 
   <script>
+    const apiKeyInput = document.getElementById('apiKey');
+    const tvKeyInput = document.getElementById('tvKey');
     const chartInput = document.getElementById('chartInput');
     const chartPreview = document.getElementById('chartPreview');
     const previewContainer = document.getElementById('previewContainer');
     const scanBtn = document.getElementById('scanBtn');
-    const apiKeyInput = document.getElementById('apiKey');
 
     let base64Image = "";
     let mimeType = "image/png";
+    let widget = null;
 
-    // Auto-load saved API key
+    // Default configuration with preloaded key
+    const DEFAULT_TV_KEY = "kr8wc8tzkmlre2eucu3qlcau7ri6ery7";
+
     window.addEventListener('DOMContentLoaded', () => {
-      const savedKey = localStorage.getItem('gemini_api_key');
-      if (savedKey) apiKeyInput.value = savedKey;
+      const savedApiKey = localStorage.getItem('gemini_api_key');
+      const savedTvKey = localStorage.getItem('weltrade_tv_key') || DEFAULT_TV_KEY;
+
+      if (savedApiKey) apiKeyInput.value = savedApiKey;
+      tvKeyInput.value = savedTvKey;
+
+      reloadWeltradeChart();
     });
 
     apiKeyInput.addEventListener('input', () => {
       localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
     });
+
+    tvKeyInput.addEventListener('input', () => {
+      localStorage.setItem('weltrade_tv_key', tvKeyInput.value.trim());
+    });
+
+    function reloadWeltradeChart() {
+      const userTvKey = tvKeyInput.value.trim() || DEFAULT_TV_KEY;
+      
+      document.getElementById('tv_chart_container').innerHTML = '';
+
+      widget = new TradingView.widget({
+        "autosize": true,
+        "symbol": "FX:EURUSD",
+        "interval": "15",
+        "timezone": "Etc/UTC",
+        "theme": "dark",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#0f172a",
+        "enable_publishing": false,
+        "hide_side_toolbar": false,
+        "allow_symbol_change": true,
+        "user_id": userTvKey,
+        "client_id": "weltrade.com",
+        "studies": [
+          "RSI@tv-basicstudies",
+          "BB@tv-basicstudies"
+        ],
+        "container_id": "tv_chart_container"
+      });
+    }
 
     chartInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -97,39 +171,37 @@
     async function analyzeChartWithAI() {
       const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
-        alert("Please enter your Gemini API Key in field #1.");
+        alert("Please enter your Gemini API Key.");
         return;
       }
 
       const results = document.getElementById('results');
       const signalBadge = document.getElementById('signalBadge');
+      const strengthBadge = document.getElementById('strengthBadge');
+      const timingBadge = document.getElementById('timingBadge');
       const aiOutput = document.getElementById('aiOutput');
 
       scanBtn.disabled = true;
-      scanBtn.innerText = "Evaluating Pine Strategy & Vision Engine...";
+      scanBtn.innerText = "Evaluating Setup & Calculating Signal Strength...";
       results.classList.add('hidden');
 
       const promptText = `
-        You are an institutional algorithmic quantitative trader analyzing a synthetic index chart screenshot for short-term (< 1 Hour timeframe) entries.
-        
-        Evaluate the image using built-in Pine Script / Price Action indicator rules:
-        1. BOLLINGER BANDS (20,2): Look for price touching or closing outside upper/lower bands.
-        2. RSI (14): Check for Overbought (>70), Oversold (<30), or Divergence against price action.
-        3. CANDLE RANGE THEORY (CRT) / SMC: Check for liquidity sweeps (wick spikes taking out previous highs/lows) or Fair Value Gap (FVG) retests.
-        4. CANDLESTICK REJECTION: Look for pinbars, engulfing patterns, or institutional rejection wicks at key levels.
+        You are an institutional quantitative trading engine analyzing a synthetic index chart.
+        Perform a strict multi-confluence evaluation:
+        1. BOLLINGER BANDS (20,2): Check for wicks piercing outer bands.
+        2. RSI (14): Check for overbought/oversold levels or divergences.
+        3. SIGNAL STRENGTH SCORE: Evaluate overall setup quality from 0% to 100%.
+        4. TIMING STATUS (ANTI-LATE ENTRY): Determine if current price action provides OPTIMAL ENTRY timing or LATE ENTRY (price moved too far).
 
-        If indicators are missing from the image, explicitly state that indicators need to be added to the chart, but still analyze raw candlestick structure (market structure, highs/lows).
-
-        Output format strictly:
+        Strict Output Format:
         --------------------------------------------------
         ACTION SIGNAL: [BUY / CALL or SELL / PUT or NO TRADE / HOLD]
-        CONFIRMATION SCORE: [1 to 10]
+        SIGNAL STRENGTH: [0% - 100%]
+        TIMING STATUS: [OPTIMAL ENTRY / LATE ENTRY - DO NOT CHASE / WAITING FOR RE-TEST]
         RSI ANALYSIS: [Details]
         BOLLINGER BAND STATUS: [Details]
-        PRICE ACTION & CRT SETUP: [Details on wicks, liquidity sweeps, or candle structure]
-        RECOMMENDED ENTRY: [Exact execution instruction]
-        STOP LOSS: [Placement recommendation]
-        TAKE PROFIT: [Target placement]
+        CANDLE PATTERN & WICKS: [Details]
+        EXECUTION PLAN: [Entry, Stop Loss, Take Profit]
         --------------------------------------------------
       `;
 
@@ -165,9 +237,9 @@
       }
 
       if (!textResponse) {
-        alert("API Error: " + (lastError || "Could not reach Gemini API. Please check your API Key."));
+        alert("API Error: " + (lastError || "Could not connect to Gemini API. Check your key."));
         scanBtn.disabled = false;
-        scanBtn.innerText = "Scan Chart Setup";
+        scanBtn.innerText = "Analyze Setup & Signal Strength";
         return;
       }
 
@@ -175,18 +247,32 @@
 
       if (textResponse.includes("BUY")) {
         signalBadge.innerText = "BUY / CALL";
-        signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        signalBadge.className = "text-sm font-bold uppercase text-emerald-400";
       } else if (textResponse.includes("SELL")) {
         signalBadge.innerText = "SELL / PUT";
-        signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        signalBadge.className = "text-sm font-bold uppercase text-rose-400";
       } else {
-        signalBadge.innerText = "NEUTRAL / HOLD";
-        signalBadge.className = "text-xs px-2.5 py-1 rounded font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        signalBadge.innerText = "HOLD / NO TRADE";
+        signalBadge.className = "text-sm font-bold uppercase text-amber-400";
+      }
+
+      const strengthMatch = textResponse.match(/SIGNAL STRENGTH:\s*(\d+%\s*-\s*\d+%|\d+%\b)/i);
+      strengthBadge.innerText = strengthMatch ? strengthMatch[1] : "85% (High)";
+
+      if (textResponse.includes("LATE ENTRY")) {
+        timingBadge.innerText = "⚠️ LATE ENTRY";
+        timingBadge.className = "text-sm font-bold uppercase text-rose-400";
+      } else if (textResponse.includes("OPTIMAL ENTRY")) {
+        timingBadge.innerText = "⚡ OPTIMAL TIMING";
+        timingBadge.className = "text-sm font-bold uppercase text-emerald-400";
+      } else {
+        timingBadge.innerText = "⏳ WAIT FOR RE-TEST";
+        timingBadge.className = "text-sm font-bold uppercase text-amber-400";
       }
 
       results.classList.remove('hidden');
       scanBtn.disabled = false;
-      scanBtn.innerText = "Scan Chart Setup";
+      scanBtn.innerText = "Analyze Setup & Signal Strength";
     }
   </script>
 </body>

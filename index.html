@@ -14,16 +14,16 @@
     <header class="flex justify-between items-center pb-5 mb-5 border-b border-slate-800">
       <div>
         <h1 class="text-xl font-bold text-emerald-400">Weltrade AI SyntX Scanner</h1>
-        <p class="text-xs text-slate-400 mt-0.5">RSI (14) + Bollinger Bands (20,2) Vision Engine</p>
+        <p class="text-xs text-slate-400 mt-0.5">Pine Script & Price Action Multi-Engine (< 1H)</p>
       </div>
-      <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v2.2 Live</span>
+      <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">v2.3 Live</span>
     </header>
 
     <!-- API Key Input -->
     <div class="mb-5">
       <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">1. Enter Gemini API Key</label>
       <input type="password" id="apiKey" placeholder="Paste AIzaSy... API Key here" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-      <p class="text-[10px] text-slate-500 mt-1">Key runs directly in your browser session and is never saved externally.</p>
+      <p class="text-[10px] text-slate-500 mt-1">Key is saved securely in your phone's browser local storage.</p>
     </div>
 
     <!-- Upload Area -->
@@ -31,7 +31,7 @@
       <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">2. Upload Weltrade Chart Screenshot</label>
       <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-5 text-center cursor-pointer relative transition-colors">
         <input type="file" id="chartInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
-        <p class="text-sm font-medium text-slate-300">Click or drop MT4/MT5 Chart Screenshot here</p>
+        <p class="text-sm font-medium text-slate-300">Click or drop MT4/MT5 / TradingView Chart Screenshot here</p>
         <p class="text-xs text-slate-500 mt-0.5">Supports PainX, GainX, FX Vol, FlipX, Volatility Indices</p>
       </div>
     </div>
@@ -64,8 +64,20 @@
     const chartPreview = document.getElementById('chartPreview');
     const previewContainer = document.getElementById('previewContainer');
     const scanBtn = document.getElementById('scanBtn');
+    const apiKeyInput = document.getElementById('apiKey');
+
     let base64Image = "";
     let mimeType = "image/png";
+
+    // Auto-load saved API key
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('gemini_api_key');
+      if (savedKey) apiKeyInput.value = savedKey;
+    });
+
+    apiKeyInput.addEventListener('input', () => {
+      localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+    });
 
     chartInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -83,7 +95,7 @@
     });
 
     async function analyzeChartWithAI() {
-      const apiKey = document.getElementById('apiKey').value.trim();
+      const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
         alert("Please enter your Gemini API Key in field #1.");
         return;
@@ -94,28 +106,33 @@
       const aiOutput = document.getElementById('aiOutput');
 
       scanBtn.disabled = true;
-      scanBtn.innerText = "Analyzing Chart with Vision Engine...";
+      scanBtn.innerText = "Evaluating Pine Strategy & Vision Engine...";
       results.classList.add('hidden');
 
       const promptText = `
-        You are an expert technical trader analyzing a Weltrade synthetic index chart.
-        Examine the uploaded screenshot strictly against these criteria:
-        1. BOLLINGER BANDS (20,2): Is the price candle touching, piercing, or bouncing off the Upper Band or Lower Band? If indicators are missing, explicitly note it.
-        2. RSI (14): Is the RSI line in the sub-window in the Overbought zone (>70), Oversold zone (<30), or Neutral zone (40-60)?
-        3. SYNTHETIC PATTERN: Is there a clear rejection candlestick (pinbar, engulfing) at key levels?
+        You are an institutional algorithmic quantitative trader analyzing a synthetic index chart screenshot for short-term (< 1 Hour timeframe) entries.
+        
+        Evaluate the image using built-in Pine Script / Price Action indicator rules:
+        1. BOLLINGER BANDS (20,2): Look for price touching or closing outside upper/lower bands.
+        2. RSI (14): Check for Overbought (>70), Oversold (<30), or Divergence against price action.
+        3. CANDLE RANGE THEORY (CRT) / SMC: Check for liquidity sweeps (wick spikes taking out previous highs/lows) or Fair Value Gap (FVG) retests.
+        4. CANDLESTICK REJECTION: Look for pinbars, engulfing patterns, or institutional rejection wicks at key levels.
 
-        Provide your output strictly in this structured format:
+        If indicators are missing from the image, explicitly state that indicators need to be added to the chart, but still analyze raw candlestick structure (market structure, highs/lows).
+
+        Output format strictly:
         --------------------------------------------------
         ACTION SIGNAL: [BUY / CALL or SELL / PUT or NO TRADE / HOLD]
-        RSI LEVEL: [State status and value if visible]
-        BOLLINGER BAND STATUS: [State status if visible]
-        RECOMMENDED ENTRY: [Detailed instruction]
+        CONFIRMATION SCORE: [1 to 10]
+        RSI ANALYSIS: [Details]
+        BOLLINGER BAND STATUS: [Details]
+        PRICE ACTION & CRT SETUP: [Details on wicks, liquidity sweeps, or candle structure]
+        RECOMMENDED ENTRY: [Exact execution instruction]
         STOP LOSS: [Placement recommendation]
-        TAKE PROFIT: [Placement recommendation]
+        TAKE PROFIT: [Target placement]
         --------------------------------------------------
       `;
 
-      // Supported active models fallback list
       const models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.5-flash-lite'];
       let textResponse = null;
       let lastError = null;

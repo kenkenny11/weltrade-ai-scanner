@@ -5,19 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weltrade AI SyntX Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 15px rgba(37, 99, 235, 0.5); }
-      50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.9); }
-    }
-    .floating-radar {
-      animation: pulse-glow 2.5s infinite;
-    }
-  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 md:p-8 relative">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 md:p-8">
 
-  <div class="max-w-4xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl mb-24">
+  <div class="max-w-4xl mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
     
     <!-- Header -->
     <header class="flex flex-wrap justify-between items-center pb-5 mb-5 border-b border-slate-800 gap-2">
@@ -25,32 +16,37 @@
         <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
           Weltrade AI SyntX Terminal
         </h1>
-        <p class="text-xs text-slate-400 mt-0.5">Live Feed • Gemini 3.7 Flash Instant Clipboard Scanner</p>
+        <p class="text-xs text-slate-400 mt-0.5">Live SyntX Feed • Gemini 3.7 Flash Engine • Anti-Late Entry Filter</p>
       </div>
       <div>
-        <span class="text-xs px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-full font-mono">Gemini 3.7 Active</span>
+        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">Gemini 3.7 Active</span>
       </div>
     </header>
 
-    <!-- Setup Keys -->
+    <!-- Credentials & Setup -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
       <div>
         <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">1. Google AI Studio API Key</label>
-        <input type="password" id="apiKey" placeholder="Paste AIzaSy... key from Google AI Studio" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
+        <input type="password" id="apiKey" placeholder="Paste AIzaSy... key from AI Studio" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
+        <p class="text-[10px] text-slate-500 mt-1">Saved securely in local browser storage.</p>
       </div>
       <div>
-        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">2. Weltrade Sync Key</label>
-        <input type="text" id="tvKey" value="kr8wc8tzkmlre2eucu3qlcau7ri6ery7" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200 font-mono">
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">2. Weltrade TradingView Sync Key</label>
+        <input type="text" id="tvKey" placeholder="kr8wc8tzkmlre2eucu3qlcau7ri6ery7" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200 font-mono">
+        <p class="text-[10px] text-slate-500 mt-1">Syncs drawing templates across sessions.</p>
       </div>
     </div>
 
-    <!-- Live Chart Feed -->
+    <!-- Live Weltrade SyntX Chart Embed -->
     <div class="mb-6">
       <div class="flex justify-between items-center mb-2">
-        <label class="text-xs font-semibold uppercase text-slate-400">Live Weltrade TradingView Chart Hub</label>
-        <a href="https://www.weltrade.com/tools/charts/" target="_blank" class="text-[11px] text-emerald-400 hover:underline">Open Chart Direct ↗</a>
+        <label class="text-xs font-semibold uppercase text-slate-400">Live Weltrade SyntX Chart Feed</label>
+        <div class="flex items-center gap-3">
+          <button onclick="reloadWeltradeHub()" class="text-[11px] text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">Reload Chart</button>
+          <a href="https://www.weltrade.com/tools/charts/" target="_blank" class="text-[11px] text-slate-400 hover:text-emerald-400">Open Fullscreen ↗</a>
+        </div>
       </div>
-      <div class="w-full h-[520px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
+      <div class="w-full h-[480px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
         <iframe 
           id="weltradeFrame"
           src="https://www.weltrade.com/tools/charts/" 
@@ -60,12 +56,24 @@
       </div>
     </div>
 
-    <!-- Instructions / Direct Button -->
-    <button id="mainScanBtn" onclick="scanClipboard()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-      </svg>
-      <span>⚡ Scan Clipboard Chart (Gemini 3.7)</span>
+    <!-- Direct SyntX Image Scanner / Upload Box -->
+    <div class="mb-5">
+      <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">3. SyntX Deep Vision Scan (FlipX / FX Vol / PainX / GainX)</label>
+      <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-4 text-center cursor-pointer relative transition-colors">
+        <input type="file" id="chartInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+        <p class="text-sm font-medium text-slate-300">Tap to upload chart screenshot OR paste directly from clipboard</p>
+        <p class="text-xs text-slate-500 mt-0.5">Scans Bollinger Bands, RSI, Rejection Wicks & Entry Timing</p>
+      </div>
+    </div>
+
+    <!-- Image Preview -->
+    <div id="previewContainer" class="hidden mb-5 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center">
+      <img id="chartPreview" class="max-h-56 mx-auto rounded object-contain">
+    </div>
+
+    <!-- Scan Action Button -->
+    <button id="scanBtn" onclick="analyzeChartWithAI()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
+      <span>Run Deep AI Signal Scan (Gemini 3.7)</span>
     </button>
 
     <!-- Results Display -->
@@ -89,79 +97,73 @@
 
   </div>
 
-  <!-- FLOATING BLUE GEMINI BUTTON -->
-  <button id="floatingAiBtn" onclick="scanClipboard()" title="Scan Latest Chart Screenshot" class="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-500 text-white rounded-full p-4 shadow-2xl border-2 border-blue-400 floating-radar flex items-center justify-center transition-all transform hover:scale-110 active:scale-95">
-    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-    </svg>
-  </button>
-
   <script>
     const apiKeyInput = document.getElementById('apiKey');
     const tvKeyInput = document.getElementById('tvKey');
-    const mainScanBtn = document.getElementById('mainScanBtn');
+    const chartInput = document.getElementById('chartInput');
+    const chartPreview = document.getElementById('chartPreview');
+    const previewContainer = document.getElementById('previewContainer');
+    const scanBtn = document.getElementById('scanBtn');
 
-    // Restore saved API keys
+    let base64Image = "";
+    let mimeType = "image/png";
+    const DEFAULT_TV_KEY = "kr8wc8tzkmlre2eucu3qlcau7ri6ery7";
+
+    // Restore saved credentials on startup
     window.addEventListener('DOMContentLoaded', () => {
       const savedApiKey = localStorage.getItem('gemini_api_key');
-      const savedTvKey = localStorage.getItem('weltrade_tv_key');
+      const savedTvKey = localStorage.getItem('weltrade_tv_key') || DEFAULT_TV_KEY;
       if (savedApiKey) apiKeyInput.value = savedApiKey;
-      if (savedTvKey) tvKeyInput.value = savedTvKey;
+      tvKeyInput.value = savedTvKey;
     });
 
     apiKeyInput.addEventListener('input', () => localStorage.setItem('gemini_api_key', apiKeyInput.value.trim()));
     tvKeyInput.addEventListener('input', () => localStorage.setItem('weltrade_tv_key', tvKeyInput.value.trim()));
 
-    async function scanClipboard() {
+    function reloadWeltradeHub() {
+      document.getElementById('weltradeFrame').src = "https://www.weltrade.com/tools/charts/";
+    }
+
+    function processImageFile(file) {
+      if (!file) return;
+      mimeType = file.type || "image/png";
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        base64Image = e.target.result.split(',')[1];
+        chartPreview.src = e.target.result;
+        previewContainer.classList.remove('hidden');
+        scanBtn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    chartInput.addEventListener('change', e => processImageFile(e.target.files[0]));
+
+    // Support direct clipboard paste
+    window.addEventListener('paste', e => {
+      const items = e.clipboardData.items;
+      for (let item of items) {
+        if (item.type.indexOf("image") === 0) {
+          processImageFile(item.getAsFile());
+          break;
+        }
+      }
+    });
+
+    async function analyzeChartWithAI() {
       const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
-        alert("Please paste your Google AI Studio API key at the top first.");
+        alert("Please paste your Google AI Studio API key first.");
         return;
       }
 
-      mainScanBtn.disabled = true;
-      mainScanBtn.innerText = "Reading Clipboard...";
-
-      try {
-        const clipboardItems = await navigator.clipboard.read();
-        let imageBlob = null;
-
-        for (const item of clipboardItems) {
-          const type = item.types.find(t => t.startsWith('image/'));
-          if (type) {
-            imageBlob = await item.getType(type);
-            break;
-          }
-        }
-
-        if (!imageBlob) {
-          alert("No screenshot found in clipboard! Please take a quick screenshot of your chart screen first.");
-          resetScanBtn();
-          return;
-        }
-
-        mainScanBtn.innerText = "Analyzing with Gemini 3.7 Flash...";
-
-        const reader = new FileReader();
-        reader.onload = async function (e) {
-          const base64Data = e.target.result.split(',')[1];
-          const mimeType = imageBlob.type || 'image/png';
-          await analyzeWithGemini(apiKey, base64Data, mimeType);
-        };
-        reader.readAsDataURL(imageBlob);
-
-      } catch (err) {
-        alert("Clipboard permission required. Grant permission or take a screenshot to copy it to your clipboard.");
-        resetScanBtn();
+      if (!base64Image) {
+        alert("Please upload or paste a SyntX chart screenshot first.");
+        return;
       }
-    }
 
-    function resetScanBtn() {
-      mainScanBtn.disabled = false;
-      mainScanBtn.innerText = "⚡ Scan Clipboard Chart (Gemini 3.7)";
-    }
-
-    async function analyzeWithGemini(apiKey, base64Data, mimeType) {
+      scanBtn.disabled = true;
+      scanBtn.innerText = "Scanning with Gemini 3.7 Flash...";
       document.getElementById('results').classList.add('hidden');
 
       const promptText = `
@@ -178,7 +180,7 @@
         ACTION SIGNAL: [BUY / CALL or SELL / PUT or HOLD]
         SIGNAL STRENGTH: [0% - 100%]
         TIMING STATUS: [OPTIMAL ENTRY / LATE ENTRY / WAIT FOR RE-TEST]
-        RSI & BAND CONFLUENCE: [Analysis]
+        RSI & BAND CONFLUENCE: [Detailed Breakdown]
         PRICE ACTION / WICK REJECTION: [Analysis]
         EXECUTION PLAN: [Entry Zone, Stop Loss, Take Profit]
         --------------------------------------------------
@@ -186,7 +188,7 @@
 
       const models = ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
       let textResponse = null;
-      let errorMsg = "";
+      let errorDetails = "";
 
       for (const model of models) {
         try {
@@ -197,7 +199,7 @@
               contents: [{
                 parts: [
                   { text: promptText },
-                  { inline_data: { mime_type: mimeType, data: base64Data } }
+                  { inline_data: { mime_type: mimeType, data: base64Image } }
                 ]
               }]
             })
@@ -208,21 +210,20 @@
             textResponse = data.candidates[0].content.parts[0].text;
             break;
           } else if (data.error) {
-            errorMsg = data.error.message;
+            errorDetails = data.error.message;
           }
         } catch (err) {
-          errorMsg = err.message;
+          errorDetails = err.message;
         }
       }
 
-      resetScanBtn();
-
       if (!textResponse) {
-        alert("Gemini Scan Failed: " + (errorMsg || "Invalid API key or network error."));
+        alert("Google AI Studio Error: " + (errorDetails || "API request failed. Verify your key and permissions."));
+        scanBtn.disabled = false;
+        scanBtn.innerText = "Run Deep AI Signal Scan (Gemini 3.7)";
         return;
       }
 
-      // Populate UI
       document.getElementById('aiOutput').innerText = textResponse;
 
       const signalBadge = document.getElementById('signalBadge');
@@ -252,6 +253,8 @@
       }
 
       document.getElementById('results').classList.remove('hidden');
+      scanBtn.disabled = false;
+      scanBtn.innerText = "Run Deep AI Signal Scan (Gemini 3.7)";
     }
   </script>
 </body>

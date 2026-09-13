@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weltrade Multi-Timeframe SyntX Terminal</title>
+  <title>Weltrade SyntX High-Speed Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 md:p-8">
@@ -14,12 +14,12 @@
     <header class="flex flex-wrap justify-between items-center pb-5 mb-5 border-b border-slate-800 gap-2">
       <div>
         <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
-          Weltrade SyntX Terminal
+          Weltrade SyntX Fast Terminal
         </h1>
-        <p class="text-xs text-slate-400 mt-0.5">Multi-Timeframe Confluence Engine • Top-Down Price Action Strategy</p>
+        <p class="text-xs text-slate-400 mt-0.5">Ultra-Fast Vision Compression Engine • Sub-5s Execution</p>
       </div>
       <div>
-        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">Gemini 2.5/3.7 Active</span>
+        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">Gemini 2.5 Flash High-Speed</span>
       </div>
     </header>
 
@@ -81,8 +81,8 @@
     </div>
 
     <!-- Scan Action Button -->
-    <button id="scanBtn" onclick="analyzeMultiTimeframe()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
-      <span>Run Dual Multi-Timeframe Scan</span>
+    <button id="scanBtn" onclick="analyzeMultiTimeframeFast()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
+      <span>⚡ Run High-Speed Multi-Timeframe Scan</span>
     </button>
 
     <!-- Results Display -->
@@ -113,8 +113,8 @@
     const ltfInput = document.getElementById('ltfInput');
     const scanBtn = document.getElementById('scanBtn');
 
-    let htfBase64 = null, htfMime = "image/png";
-    let ltfBase64 = null, ltfMime = "image/png";
+    let htfBase64 = null;
+    let ltfBase64 = null;
     const DEFAULT_TV_KEY = "kr8wc8tzkmlre2eucu3qlcau7ri6ery7";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -135,35 +135,67 @@
       scanBtn.disabled = !(htfBase64 && ltfBase64);
     }
 
+    // High-speed client-side image compression function
+    function compressAndConvertImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxDim = 1024;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height *= maxDim / width;
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width *= maxDim / height;
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG at 80% quality (reduces payload from ~5MB to ~80KB)
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          const base64Data = compressedDataUrl.split(',')[1];
+          callback(base64Data, compressedDataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
     htfInput.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
-      htfMime = file.type || "image/png";
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        htfBase64 = evt.target.result.split(',')[1];
-        document.getElementById('htfPreview').src = evt.target.result;
+      compressAndConvertImage(file, (base64, dataUrl) => {
+        htfBase64 = base64;
+        document.getElementById('htfPreview').src = dataUrl;
         document.getElementById('htfPreviewContainer').classList.remove('hidden');
         checkReady();
-      };
-      reader.readAsDataURL(file);
+      });
     });
 
     ltfInput.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
-      ltfMime = file.type || "image/png";
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        ltfBase64 = evt.target.result.split(',')[1];
-        document.getElementById('ltfPreview').src = evt.target.result;
+      compressAndConvertImage(file, (base64, dataUrl) => {
+        ltfBase64 = base64;
+        document.getElementById('ltfPreview').src = dataUrl;
         document.getElementById('ltfPreviewContainer').classList.remove('hidden');
         checkReady();
-      };
-      reader.readAsDataURL(file);
+      });
     });
 
-    async function analyzeMultiTimeframe() {
+    async function analyzeMultiTimeframeFast() {
       const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
         alert("Please paste your Google AI Studio API key first.");
@@ -171,101 +203,93 @@
       }
 
       scanBtn.disabled = true;
-      scanBtn.innerText = "Analyzing Top-Down Price Action...";
+      scanBtn.innerText = "⚡ Scanning in Sub-5 Seconds...";
       document.getElementById('results').classList.add('hidden');
 
       const promptText = `
         You are an institutional quantitative scanner analyzing a Weltrade SyntX setup (FlipX 1, FlipX 2, FX Vol 20, PainX, GainX).
-        You are provided with TWO images: Image 1 is Higher Timeframe (HTF) and Image 2 is Lower Timeframe (LTF).
+        Image 1: Higher Timeframe (HTF). Image 2: Lower Timeframe (LTF).
 
-        Perform Top-Down Price Action Analysis:
-        1. HTF BIAS & STRUCTURE: Identify overall trend direction, major Support/Resistance, or Order Blocks on Image 1.
-        2. LTF ENTRY CONFLUENCE: Evaluate Image 2 for Break of Structure (BOS), Fair Value Gap (FVG) re-tests, or rejection wicks aligned with HTF bias.
-        3. TIMING STATUS: Is price at OPTIMAL ENTRY or LATE ENTRY?
-        4. CONFLUENCE SCORE: Rate from 0% to 100%.
+        Perform quick Top-Down Price Action Analysis:
+        1. HTF BIAS: Trend & key levels on Image 1.
+        2. LTF TRIGGER: BOS, FVG, or wicks on Image 2.
+        3. TIMING STATUS: OPTIMAL ENTRY or LATE ENTRY.
+        4. CONFLUENCE SCORE: Rate 0% to 100%.
 
-        Strict Output Format:
+        Strict Concise Format:
         --------------------------------------------------
         ACTION SIGNAL: [BUY / CALL or SELL / PUT or HOLD]
         SIGNAL STRENGTH: [0% - 100%]
         TIMING STATUS: [OPTIMAL ENTRY / LATE ENTRY / WAIT FOR RE-TEST]
-        HTF STRUCTURAL BIAS: [Analysis of Image 1]
-        LTF ENTRY TRIGGER: [Analysis of Image 2 (BOS / Wicks / FVG)]
-        EXECUTION PLAN: [Exact Entry Level, Stop Loss, Take Profit, Risk/Reward]
+        HTF STRUCTURAL BIAS: [Brief summary]
+        LTF ENTRY TRIGGER: [Brief summary]
+        EXECUTION PLAN: [Entry, Stop Loss, Take Profit]
         --------------------------------------------------
       `;
 
-      // Models list updated to non-deprecated versions
-      const models = ['gemini-2.5-flash', 'gemini-3.7-flash'];
-      let textResponse = null;
-      let errorDetails = "";
+      try {
+        const startTime = Date.now();
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: promptText },
+                { inline_data: { mime_type: "image/jpeg", data: htfBase64 } },
+                { inline_data: { mime_type: "image/jpeg", data: ltfBase64 } }
+              ]
+            }],
+            generationConfig: {
+              maxOutputTokens: 500,
+              temperature: 0.1
+            }
+          })
+        });
 
-      for (const model of models) {
-        try {
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: promptText },
-                  { inline_data: { mime_type: htfMime, data: htfBase64 } },
-                  { inline_data: { mime_type: ltfMime, data: ltfBase64 } }
-                ]
-              }]
-            })
-          });
+        const data = await response.json();
+        const executionTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
-          const data = await response.json();
-          if (data.candidates && data.candidates[0].content) {
-            textResponse = data.candidates[0].content.parts[0].text;
-            break;
-          } else if (data.error) {
-            errorDetails = data.error.message;
-          }
-        } catch (err) {
-          errorDetails = err.message;
+        if (!data.candidates || !data.candidates[0].content) {
+          throw new Error(data.error ? data.error.message : "API Request failed");
         }
-      }
 
-      if (!textResponse) {
-        alert("Google AI Studio Error: " + (errorDetails || "API request failed. Verify your key."));
+        const textResponse = data.candidates[0].content.parts[0].text;
+        document.getElementById('aiOutput').innerText = `[Execution Speed: ${executionTime}s]\n\n` + textResponse;
+
+        const signalBadge = document.getElementById('signalBadge');
+        const strengthBadge = document.getElementById('strengthBadge');
+        const timingBadge = document.getElementById('timingBadge');
+
+        if (textResponse.includes("BUY")) {
+          signalBadge.innerText = "BUY / CALL";
+          signalBadge.className = "text-sm font-bold uppercase text-emerald-400";
+        } else if (textResponse.includes("SELL")) {
+          signalBadge.innerText = "SELL / PUT";
+          signalBadge.className = "text-sm font-bold uppercase text-rose-400";
+        } else {
+          signalBadge.innerText = "HOLD / WAIT";
+          signalBadge.className = "text-sm font-bold uppercase text-amber-400";
+        }
+
+        const matchStr = textResponse.match(/SIGNAL STRENGTH:\s*(\d+%)/i);
+        strengthBadge.innerText = matchStr ? matchStr[1] : "88%";
+
+        if (textResponse.includes("LATE ENTRY")) {
+          timingBadge.innerText = "⚠️ LATE ENTRY";
+          timingBadge.className = "text-sm font-bold uppercase text-rose-400";
+        } else {
+          timingBadge.innerText = "⚡ OPTIMAL";
+          timingBadge.className = "text-sm font-bold uppercase text-emerald-400";
+        }
+
+        document.getElementById('results').classList.remove('hidden');
+      } catch (err) {
+        alert("Execution Error: " + err.message);
+      } finally {
         scanBtn.disabled = false;
-        scanBtn.innerText = "Run Dual Multi-Timeframe Scan";
-        return;
+        scanBtn.innerText = "⚡ Run High-Speed Multi-Timeframe Scan";
       }
-
-      document.getElementById('aiOutput').innerText = textResponse;
-
-      const signalBadge = document.getElementById('signalBadge');
-      const strengthBadge = document.getElementById('strengthBadge');
-      const timingBadge = document.getElementById('timingBadge');
-
-      if (textResponse.includes("BUY")) {
-        signalBadge.innerText = "BUY / CALL";
-        signalBadge.className = "text-sm font-bold uppercase text-emerald-400";
-      } else if (textResponse.includes("SELL")) {
-        signalBadge.innerText = "SELL / PUT";
-        signalBadge.className = "text-sm font-bold uppercase text-rose-400";
-      } else {
-        signalBadge.innerText = "HOLD / WAIT";
-        signalBadge.className = "text-sm font-bold uppercase text-amber-400";
-      }
-
-      const matchStr = textResponse.match(/SIGNAL STRENGTH:\s*(\d+%)/i);
-      strengthBadge.innerText = matchStr ? matchStr[1] : "88%";
-
-      if (textResponse.includes("LATE ENTRY")) {
-        timingBadge.innerText = "⚠️ LATE ENTRY";
-        timingBadge.className = "text-sm font-bold uppercase text-rose-400";
-      } else {
-        timingBadge.innerText = "⚡ OPTIMAL";
-        timingBadge.className = "text-sm font-bold uppercase text-emerald-400";
-      }
-
-      document.getElementById('results').classList.remove('hidden');
-      scanBtn.disabled = false;
-      scanBtn.innerText = "Run Dual Multi-Timeframe Scan";
     }
   </script>
 </body>

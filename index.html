@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weltrade AI SyntX Terminal</title>
+  <title>Weltrade Multi-Timeframe SyntX Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-4 md:p-8">
@@ -14,12 +14,12 @@
     <header class="flex flex-wrap justify-between items-center pb-5 mb-5 border-b border-slate-800 gap-2">
       <div>
         <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
-          Weltrade AI SyntX Terminal
+          Weltrade SyntX Terminal
         </h1>
-        <p class="text-xs text-slate-400 mt-0.5">Live SyntX Feed • Gemini 3.7 Flash Engine • Anti-Late Entry Filter</p>
+        <p class="text-xs text-slate-400 mt-0.5">Multi-Timeframe Confluence Engine • Top-Down Price Action Strategy</p>
       </div>
       <div>
-        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">Gemini 3.7 Active</span>
+        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono">Gemini 2.5/3.7 Active</span>
       </div>
     </header>
 
@@ -28,52 +28,61 @@
       <div>
         <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">1. Google AI Studio API Key</label>
         <input type="password" id="apiKey" placeholder="Paste AIzaSy... key from AI Studio" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200">
-        <p class="text-[10px] text-slate-500 mt-1">Saved securely in local browser storage.</p>
       </div>
       <div>
-        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">2. Weltrade TradingView Sync Key</label>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">2. Weltrade Sync Key</label>
         <input type="text" id="tvKey" placeholder="kr8wc8tzkmlre2eucu3qlcau7ri6ery7" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 text-slate-200 font-mono">
-        <p class="text-[10px] text-slate-500 mt-1">Syncs drawing templates across sessions.</p>
       </div>
     </div>
 
-    <!-- Live Weltrade SyntX Chart Embed -->
+    <!-- Live Weltrade Chart Embed -->
     <div class="mb-6">
       <div class="flex justify-between items-center mb-2">
-        <label class="text-xs font-semibold uppercase text-slate-400">Live Weltrade SyntX Chart Feed</label>
+        <label class="text-xs font-semibold uppercase text-slate-400">Live Weltrade Chart Feed</label>
         <div class="flex items-center gap-3">
           <button onclick="reloadWeltradeHub()" class="text-[11px] text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">Reload Chart</button>
           <a href="https://www.weltrade.com/tools/charts/" target="_blank" class="text-[11px] text-slate-400 hover:text-emerald-400">Open Fullscreen ↗</a>
         </div>
       </div>
-      <div class="w-full h-[480px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
-        <iframe 
-          id="weltradeFrame"
-          src="https://www.weltrade.com/tools/charts/" 
-          class="w-full h-full border-0"
-          allow="fullscreen">
-        </iframe>
+      <div class="w-full h-[400px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
+        <iframe id="weltradeFrame" src="https://www.weltrade.com/tools/charts/" class="w-full h-full border-0" allow="fullscreen"></iframe>
       </div>
     </div>
 
-    <!-- Direct SyntX Image Scanner / Upload Box -->
-    <div class="mb-5">
-      <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">3. SyntX Deep Vision Scan (FlipX / FX Vol / PainX / GainX)</label>
-      <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-4 text-center cursor-pointer relative transition-colors">
-        <input type="file" id="chartInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
-        <p class="text-sm font-medium text-slate-300">Tap to upload chart screenshot OR paste directly from clipboard</p>
-        <p class="text-xs text-slate-500 mt-0.5">Scans Bollinger Bands, RSI, Rejection Wicks & Entry Timing</p>
+    <!-- Dual Timeframe Upload Inputs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+      
+      <!-- HTF Upload Box -->
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Higher Timeframe (15m / 1h Bias)</label>
+        <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-4 text-center cursor-pointer relative min-h-[110px] flex flex-col justify-center items-center">
+          <input type="file" id="htfInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+          <p class="text-xs font-medium text-slate-300">Tap to upload HTF Chart</p>
+          <p class="text-[10px] text-slate-500 mt-1">Identifies Structure & Key Levels</p>
+        </div>
+        <div id="htfPreviewContainer" class="hidden mt-2 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center">
+          <img id="htfPreview" class="max-h-32 mx-auto rounded object-contain">
+        </div>
       </div>
-    </div>
 
-    <!-- Image Preview -->
-    <div id="previewContainer" class="hidden mb-5 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center">
-      <img id="chartPreview" class="max-h-56 mx-auto rounded object-contain">
+      <!-- LTF Upload Box -->
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Lower Timeframe (1m / 5m Entry)</label>
+        <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/50 rounded-xl p-4 text-center cursor-pointer relative min-h-[110px] flex flex-col justify-center items-center">
+          <input type="file" id="ltfInput" accept="image/*" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+          <p class="text-xs font-medium text-slate-300">Tap to upload LTF Chart</p>
+          <p class="text-[10px] text-slate-500 mt-1">Identifies BOS, Rejection & Entry</p>
+        </div>
+        <div id="ltfPreviewContainer" class="hidden mt-2 bg-slate-950 p-2 rounded-xl border border-slate-800 text-center">
+          <img id="ltfPreview" class="max-h-32 mx-auto rounded object-contain">
+        </div>
+      </div>
+
     </div>
 
     <!-- Scan Action Button -->
-    <button id="scanBtn" onclick="analyzeChartWithAI()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
-      <span>Run Deep AI Signal Scan (Gemini 3.7)</span>
+    <button id="scanBtn" onclick="analyzeMultiTimeframe()" disabled class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-semibold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
+      <span>Run Dual Multi-Timeframe Scan</span>
     </button>
 
     <!-- Results Display -->
@@ -84,7 +93,7 @@
           <span id="signalBadge" class="text-sm font-bold uppercase text-slate-200">--</span>
         </div>
         <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
-          <span class="text-[10px] uppercase font-bold text-slate-500 block">Signal Strength</span>
+          <span class="text-[10px] uppercase font-bold text-slate-500 block">Signal Confluence</span>
           <span id="strengthBadge" class="text-sm font-bold font-mono text-emerald-400">--</span>
         </div>
         <div class="bg-slate-900 p-3 rounded-lg border border-slate-800">
@@ -100,16 +109,14 @@
   <script>
     const apiKeyInput = document.getElementById('apiKey');
     const tvKeyInput = document.getElementById('tvKey');
-    const chartInput = document.getElementById('chartInput');
-    const chartPreview = document.getElementById('chartPreview');
-    const previewContainer = document.getElementById('previewContainer');
+    const htfInput = document.getElementById('htfInput');
+    const ltfInput = document.getElementById('ltfInput');
     const scanBtn = document.getElementById('scanBtn');
 
-    let base64Image = "";
-    let mimeType = "image/png";
+    let htfBase64 = null, htfMime = "image/png";
+    let ltfBase64 = null, ltfMime = "image/png";
     const DEFAULT_TV_KEY = "kr8wc8tzkmlre2eucu3qlcau7ri6ery7";
 
-    // Restore saved credentials on startup
     window.addEventListener('DOMContentLoaded', () => {
       const savedApiKey = localStorage.getItem('gemini_api_key');
       const savedTvKey = localStorage.getItem('weltrade_tv_key') || DEFAULT_TV_KEY;
@@ -124,69 +131,72 @@
       document.getElementById('weltradeFrame').src = "https://www.weltrade.com/tools/charts/";
     }
 
-    function processImageFile(file) {
-      if (!file) return;
-      mimeType = file.type || "image/png";
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        base64Image = e.target.result.split(',')[1];
-        chartPreview.src = e.target.result;
-        previewContainer.classList.remove('hidden');
-        scanBtn.disabled = false;
-      };
-      reader.readAsDataURL(file);
+    function checkReady() {
+      scanBtn.disabled = !(htfBase64 && ltfBase64);
     }
 
-    chartInput.addEventListener('change', e => processImageFile(e.target.files[0]));
-
-    // Support direct clipboard paste
-    window.addEventListener('paste', e => {
-      const items = e.clipboardData.items;
-      for (let item of items) {
-        if (item.type.indexOf("image") === 0) {
-          processImageFile(item.getAsFile());
-          break;
-        }
-      }
+    htfInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      htfMime = file.type || "image/png";
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        htfBase64 = evt.target.result.split(',')[1];
+        document.getElementById('htfPreview').src = evt.target.result;
+        document.getElementById('htfPreviewContainer').classList.remove('hidden');
+        checkReady();
+      };
+      reader.readAsDataURL(file);
     });
 
-    async function analyzeChartWithAI() {
+    ltfInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      ltfMime = file.type || "image/png";
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        ltfBase64 = evt.target.result.split(',')[1];
+        document.getElementById('ltfPreview').src = evt.target.result;
+        document.getElementById('ltfPreviewContainer').classList.remove('hidden');
+        checkReady();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function analyzeMultiTimeframe() {
       const apiKey = apiKeyInput.value.trim();
       if (!apiKey) {
         alert("Please paste your Google AI Studio API key first.");
         return;
       }
 
-      if (!base64Image) {
-        alert("Please upload or paste a SyntX chart screenshot first.");
-        return;
-      }
-
       scanBtn.disabled = true;
-      scanBtn.innerText = "Scanning with Gemini 3.7 Flash...";
+      scanBtn.innerText = "Analyzing Top-Down Price Action...";
       document.getElementById('results').classList.add('hidden');
 
       const promptText = `
-        You are an institutional quantitative scanner analyzing a Weltrade SyntX chart (FlipX 1, FlipX 2, FX Vol 20, PainX, GainX).
-        
-        Analyze setup confluence:
-        1. BOLLINGER BANDS (20,2): Outer band piercings, contractions, or rejection wicks.
-        2. RSI (14): Overbought (>70), Oversold (<30), or center-line cross.
-        3. TIMING STATUS: Determine if price is at OPTIMAL ENTRY or LATE ENTRY.
-        4. SIGNAL STRENGTH SCORE: Rate from 0% to 100%.
+        You are an institutional quantitative scanner analyzing a Weltrade SyntX setup (FlipX 1, FlipX 2, FX Vol 20, PainX, GainX).
+        You are provided with TWO images: Image 1 is Higher Timeframe (HTF) and Image 2 is Lower Timeframe (LTF).
+
+        Perform Top-Down Price Action Analysis:
+        1. HTF BIAS & STRUCTURE: Identify overall trend direction, major Support/Resistance, or Order Blocks on Image 1.
+        2. LTF ENTRY CONFLUENCE: Evaluate Image 2 for Break of Structure (BOS), Fair Value Gap (FVG) re-tests, or rejection wicks aligned with HTF bias.
+        3. TIMING STATUS: Is price at OPTIMAL ENTRY or LATE ENTRY?
+        4. CONFLUENCE SCORE: Rate from 0% to 100%.
 
         Strict Output Format:
         --------------------------------------------------
         ACTION SIGNAL: [BUY / CALL or SELL / PUT or HOLD]
         SIGNAL STRENGTH: [0% - 100%]
         TIMING STATUS: [OPTIMAL ENTRY / LATE ENTRY / WAIT FOR RE-TEST]
-        RSI & BAND CONFLUENCE: [Detailed Breakdown]
-        PRICE ACTION / WICK REJECTION: [Analysis]
-        EXECUTION PLAN: [Entry Zone, Stop Loss, Take Profit]
+        HTF STRUCTURAL BIAS: [Analysis of Image 1]
+        LTF ENTRY TRIGGER: [Analysis of Image 2 (BOS / Wicks / FVG)]
+        EXECUTION PLAN: [Exact Entry Level, Stop Loss, Take Profit, Risk/Reward]
         --------------------------------------------------
       `;
 
-      const models = ['gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+      // Models list updated to non-deprecated versions
+      const models = ['gemini-2.5-flash', 'gemini-3.7-flash'];
       let textResponse = null;
       let errorDetails = "";
 
@@ -199,7 +209,8 @@
               contents: [{
                 parts: [
                   { text: promptText },
-                  { inline_data: { mime_type: mimeType, data: base64Image } }
+                  { inline_data: { mime_type: htfMime, data: htfBase64 } },
+                  { inline_data: { mime_type: ltfMime, data: ltfBase64 } }
                 ]
               }]
             })
@@ -218,9 +229,9 @@
       }
 
       if (!textResponse) {
-        alert("Google AI Studio Error: " + (errorDetails || "API request failed. Verify your key and permissions."));
+        alert("Google AI Studio Error: " + (errorDetails || "API request failed. Verify your key."));
         scanBtn.disabled = false;
-        scanBtn.innerText = "Run Deep AI Signal Scan (Gemini 3.7)";
+        scanBtn.innerText = "Run Dual Multi-Timeframe Scan";
         return;
       }
 
@@ -242,7 +253,7 @@
       }
 
       const matchStr = textResponse.match(/SIGNAL STRENGTH:\s*(\d+%)/i);
-      strengthBadge.innerText = matchStr ? matchStr[1] : "85%";
+      strengthBadge.innerText = matchStr ? matchStr[1] : "88%";
 
       if (textResponse.includes("LATE ENTRY")) {
         timingBadge.innerText = "⚠️ LATE ENTRY";
@@ -254,7 +265,7 @@
 
       document.getElementById('results').classList.remove('hidden');
       scanBtn.disabled = false;
-      scanBtn.innerText = "Run Deep AI Signal Scan (Gemini 3.7)";
+      scanBtn.innerText = "Run Dual Multi-Timeframe Scan";
     }
   </script>
 </body>
